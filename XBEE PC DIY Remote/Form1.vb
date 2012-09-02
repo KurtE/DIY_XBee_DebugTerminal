@@ -11,6 +11,7 @@ Public Class Form1
     Public fDataHasChanged As Boolean        '
     Public fNewPacketMsgSent As Boolean
     Public fNewPacketMsgMode As Boolean
+    Public fResetXBee As Boolean
     Public XBeeCommport As String
     Public XBeeCurDL As UInt32 ' our DL we are working with.
     Public XBeeCurMy As UInt32 ' Our My...
@@ -284,10 +285,12 @@ Public Class Form1
         fDataHasChanged = False
         fNewPacketMsgSent = False
         fNewPacketMsgMode = False
+        fResetXBee = False
         ' create our timer
         XBSW = New Stopwatch()
         RunningWithPipe = False
         g_fSendString = False
+        APIMode.Checked = True
     End Sub
 
     Private Function APIRecvPacket(ByVal com1 As IO.Ports.SerialPort)
@@ -619,12 +622,12 @@ ReadLoop:
             If FConnectToComm() Then
                 Timer1.Enabled = True       ' also get our timer running...
 
-                Connect.Text = "Disconnect"
+                '                Connect.Text = "Disconnect"
 
                 CommThread.RunWorkerAsync()
             End If
         Else
-            Connect.Text = "Connect"
+            '            Connect.Text = "Connect"
             CommThread.CancelAsync()            ' turn off the thread...
         End If
 
@@ -644,7 +647,7 @@ ReadLoop:
             End While
 
         Catch e As TimeoutException
-            Debug.Print("TO: Clear Input Buffer")
+            'Debug.Print("TO: Clear Input Buffer")
         Catch ex As Exception
 
         End Try
@@ -918,17 +921,17 @@ ReadLoop:
                 s = Hex(wPacketDL) + ": " + s
             End If
 
-            ' If LCDLB.InvokeRequired Then
-            'Dim d As New SetTextCallback(AddressOf AddItemToLB)
-            'Me.Invoke(d, New Object() {s})
-            'Else
-            'LCDLB.Items.Add(s)
-            'LCDLB.TopIndex = LCDLB.Items.Count - 1
-            'end if
-            ' Add to our String collection.
-            SyncLock SCListBox.SyncRoot
-                SCListBox.Add(s)
-            End SyncLock
+            ' check to see if special packet that says exit this mode... 
+            ' Note: currently just bailing, later will reset xbee and continue in simple terminal mode...
+            If s = "$TEXTM$" Then
+                fResetXBee = True
+                CommThread.CancelAsync()
+            Else
+                SyncLock SCListBox.SyncRoot
+                    SCListBox.Add(s)
+                End SyncLock
+            End If
+
         End If
         Return
     End Sub
@@ -1012,15 +1015,61 @@ ReadLoop:
         If e.ProgressPercentage < 10 Then
             LCDLB.Items.Add("*** Thread Start ***")
             LCDLB.TopIndex = LCDLB.Items.Count - 1
+            Connect.Text = "Disconnect"
         ElseIf e.ProgressPercentage > 90 Then
             LCDLB.Items.Add("*** Thread Canceled ***")
             LCDLB.TopIndex = LCDLB.Items.Count - 1
             Timer1.Enabled = False  'We can stop our timer now...
             Connect.Text = "Connect"
+
+            Dim s As String
+            Try
+
+                Using com1 As IO.Ports.SerialPort = _
+                        My.Computer.Ports.OpenSerialPort(XBeeCommport, 38400, IO.Ports.Parity.None)
+                    com1.Handshake = IO.Ports.Handshake.None
+                    System.Threading.Thread.Sleep(500)
+                    ClearInputBuffer(com1)      ' make sure there is nothing there to start with...
+
+                    ' Assume we are IN API mode
+                    LCDLB.Items.Add("My: " + Hex(APIGetHVal(com1, "MY")))
+
+                    ' Now lets get out of API mode
+                    APISetLValue(com1, "GT", 1000)  ' Guard time back to default
+                    APISetLValue(com1, "AP", 0)    ' Get out of API mode
+                    APISetLValue(com1, "DL", XBeeCurDL) ' Set the DL to the selected one in the list
+                    ClearInputBuffer(com1)      ' make sure there is nothing there to start with...
+
+                    ' Lets try to see if we succeeded or not...
+                    System.Threading.Thread.Sleep(1500)
+                    com1.NewLine = Chr(13)
+                    com1.Write("+++")
+                    com1.BaseStream.Flush()
+                    System.Threading.Thread.Sleep(1000)
+                    com1.ReadTimeout = 2000 'wait a maximum of 2 seconds for a response
+                    Try
+                        s = com1.ReadLine()         ' should see what we got...
+                        Debug.Print("+++ returned something")
+                        com1.Write("ATMY" + Chr(13))   ' Get the MY address
+                        com1.Write("ATDL" + Chr(13))   ' Get the MY address
+                        com1.Write("ATCN" + Chr(13))                  ' exit command mode
+                        s = com1.ReadLine()         ' should see what we got...
+                        LCDLB.Items.Add("MY: " + s)
+                        s = com1.ReadLine()         ' should see what we got...
+                        LCDLB.Items.Add("DL: " + s)
+                    Catch ex As Exception
+                        LCDLB.Items.Add(ex.ToString)
+                    End Try
+                    ClearInputBuffer(com1)      ' make sure there is nothing there to start with...
+                    LCDLB.Items.Add("Communications back in Text Mode")
+                End Using
+            Catch ex As Exception
+
+            End Try
         End If
     End Sub
 
-    
+
     Private Sub ComLB_DropDown(sender As Object, e As System.EventArgs) Handles ComLB.DropDown
         If ComLB.SelectedIndex = -1 Then
             ComLB.Items.Clear() ' first clear our list.
@@ -1289,7 +1338,7 @@ ReadLoop:
 
     End Sub
 
-    
+
 
 
 
@@ -1340,53 +1389,10 @@ ReadLoop:
         End If
     End Sub
 
-    Private Sub ResetXBee_Click(sender As System.Object, e As System.EventArgs) Handles ResetXBee.Click
-        Dim s As String
-        If FConnectToComm() Then
-            ' We first connect to the comm, then we convert it back from API mode back to text replacement mode.
-            If (CommThread.IsBusy) Then
-                CommThread.CancelAsync()            ' turn off the thread...
-            End If
-            Using com1 As IO.Ports.SerialPort = _
-                My.Computer.Ports.OpenSerialPort(XBeeCommport, 38400, IO.Ports.Parity.None)
-                com1.Handshake = IO.Ports.Handshake.None
-                System.Threading.Thread.Sleep(500)
-                ClearInputBuffer(com1)      ' make sure there is nothing there to start with...
-
-                ' Assume we are IN API mode
-                LCDLB.Items.Add("My: " + Hex(APIGetHVal(com1, "MY")))
-
-                ' Now lets get out of API mode
-                APISetLValue(com1, "GT", 1000)  ' Guard time back to default
-                APISetLValue(com1, "AP", 0)    ' Get out of API mode
-                APISetLValue(com1, "DL", XBeeCurDL) ' Set the DL to the selected one in the list
-                ClearInputBuffer(com1)      ' make sure there is nothing there to start with...
-
-                ' Lets try to see if we succeeded or not...
-                System.Threading.Thread.Sleep(1500)
-                com1.NewLine = Chr(13)
-                com1.Write("+++")
-                com1.BaseStream.Flush()
-                System.Threading.Thread.Sleep(1000)
-                com1.ReadTimeout = 2000 'wait a maximum of 2 seconds for a response
-                Try
-                    s = com1.ReadLine()         ' should see what we got...
-                    Debug.Print("+++ returned something")
-                    com1.Write("ATMY" + Chr(13))   ' Get the MY address
-                    com1.Write("ATDL" + Chr(13))   ' Get the MY address
-                    com1.Write("ATCN" + Chr(13))                  ' exit command mode
-                    s = com1.ReadLine()         ' should see what we got...
-                    LCDLB.Items.Add("MY: " + s)
-                    s = com1.ReadLine()         ' should see what we got...
-                    LCDLB.Items.Add("DL: " + s)
-                Catch ex As Exception
-                    LCDLB.Items.Add(ex.ToString)
-                End Try
-                ClearInputBuffer(com1)      ' make sure there is nothing there to start with...
-                LCDLB.Items.Add("Communications back in Text Mode")
-            End Using
-        End If
-
+  
+    Private Sub APIMode_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles APIMode.CheckedChanged
+        fResetXBee = True
+        CommThread.CancelAsync()
     End Sub
 End Class
 

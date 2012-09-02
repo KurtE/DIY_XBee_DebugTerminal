@@ -44,7 +44,7 @@ Partial Class Form1
         Me.XBDLCM_Clear = New System.Windows.Forms.ToolStripMenuItem()
         Me.TBTerminal = New System.Windows.Forms.TextBox()
         Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
-        Me.ResetXBee = New System.Windows.Forms.Button()
+        Me.APIMode = New System.Windows.Forms.CheckBox()
         Me.ComGB.SuspendLayout()
         Me.GroupBox1.SuspendLayout()
         Me.GroupBox2.SuspendLayout()
@@ -216,22 +216,23 @@ Partial Class Form1
         '
         Me.Timer1.Interval = 250
         '
-        'ResetXBee
+        'APIMode
         '
-        Me.ResetXBee.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.ResetXBee.Location = New System.Drawing.Point(616, 71)
-        Me.ResetXBee.Name = "ResetXBee"
-        Me.ResetXBee.Size = New System.Drawing.Size(96, 23)
-        Me.ResetXBee.TabIndex = 50
-        Me.ResetXBee.Text = "Reset XBee"
-        Me.ResetXBee.UseVisualStyleBackColor = True
+        Me.APIMode.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.APIMode.AutoSize = True
+        Me.APIMode.Location = New System.Drawing.Point(616, 74)
+        Me.APIMode.Name = "APIMode"
+        Me.APIMode.Size = New System.Drawing.Size(73, 17)
+        Me.APIMode.TabIndex = 1
+        Me.APIMode.Text = "API Mode"
+        Me.APIMode.UseVisualStyleBackColor = True
         '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(744, 342)
-        Me.Controls.Add(Me.ResetXBee)
+        Me.Controls.Add(Me.APIMode)
         Me.Controls.Add(Me.TBTerminal)
         Me.Controls.Add(Me.GroupBox1)
         Me.Controls.Add(Me.GroupBox2)
@@ -274,6 +275,6 @@ Partial Class Form1
     Friend WithEvents XBDLCM_Clear As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents TBTerminal As System.Windows.Forms.TextBox
     Friend WithEvents Timer1 As System.Windows.Forms.Timer
-    Friend WithEvents ResetXBee As System.Windows.Forms.Button
+    Friend WithEvents APIMode As System.Windows.Forms.CheckBox
 
 End Class
