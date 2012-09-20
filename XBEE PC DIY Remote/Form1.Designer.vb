@@ -45,6 +45,7 @@ Partial Class Form1
         Me.TBTerminal = New System.Windows.Forms.TextBox()
         Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
         Me.APIMode = New System.Windows.Forms.CheckBox()
+        Me.LBTerminalCount = New System.Windows.Forms.ToolStripMenuItem()
         Me.ComGB.SuspendLayout()
         Me.GroupBox1.SuspendLayout()
         Me.GroupBox2.SuspendLayout()
@@ -156,26 +157,26 @@ Partial Class Form1
         '
         'PMTerminal
         '
-        Me.PMTerminal.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.LBTerminalSelectAll, Me.LBTerminalCopytoClipBoard, Me.LBTerminalClear})
+        Me.PMTerminal.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.LBTerminalCount, Me.LBTerminalSelectAll, Me.LBTerminalCopytoClipBoard, Me.LBTerminalClear})
         Me.PMTerminal.Name = "PMTerminal"
-        Me.PMTerminal.Size = New System.Drawing.Size(123, 70)
+        Me.PMTerminal.Size = New System.Drawing.Size(123, 92)
         '
         'LBTerminalSelectAll
         '
         Me.LBTerminalSelectAll.Name = "LBTerminalSelectAll"
-        Me.LBTerminalSelectAll.Size = New System.Drawing.Size(152, 22)
+        Me.LBTerminalSelectAll.Size = New System.Drawing.Size(122, 22)
         Me.LBTerminalSelectAll.Text = "Select All"
         '
         'LBTerminalCopytoClipBoard
         '
         Me.LBTerminalCopytoClipBoard.Name = "LBTerminalCopytoClipBoard"
-        Me.LBTerminalCopytoClipBoard.Size = New System.Drawing.Size(152, 22)
+        Me.LBTerminalCopytoClipBoard.Size = New System.Drawing.Size(122, 22)
         Me.LBTerminalCopytoClipBoard.Text = "Copy"
         '
         'LBTerminalClear
         '
         Me.LBTerminalClear.Name = "LBTerminalClear"
-        Me.LBTerminalClear.Size = New System.Drawing.Size(152, 22)
+        Me.LBTerminalClear.Size = New System.Drawing.Size(122, 22)
         Me.LBTerminalClear.Text = "Clear"
         '
         'LCDLBClear
@@ -188,18 +189,18 @@ Partial Class Form1
         '
         Me.XBeeDLContextMenu.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.XBDLCM_DeleteItem, Me.XBDLCM_Clear})
         Me.XBeeDLContextMenu.Name = "PMTerminal"
-        Me.XBeeDLContextMenu.Size = New System.Drawing.Size(135, 48)
+        Me.XBeeDLContextMenu.Size = New System.Drawing.Size(153, 70)
         '
         'XBDLCM_DeleteItem
         '
         Me.XBDLCM_DeleteItem.Name = "XBDLCM_DeleteItem"
-        Me.XBDLCM_DeleteItem.Size = New System.Drawing.Size(134, 22)
+        Me.XBDLCM_DeleteItem.Size = New System.Drawing.Size(152, 22)
         Me.XBDLCM_DeleteItem.Text = "Delete Item"
         '
         'XBDLCM_Clear
         '
         Me.XBDLCM_Clear.Name = "XBDLCM_Clear"
-        Me.XBDLCM_Clear.Size = New System.Drawing.Size(134, 22)
+        Me.XBDLCM_Clear.Size = New System.Drawing.Size(152, 22)
         Me.XBDLCM_Clear.Text = "Clear List"
         '
         'TBTerminal
@@ -226,6 +227,12 @@ Partial Class Form1
         Me.APIMode.TabIndex = 1
         Me.APIMode.Text = "API Mode"
         Me.APIMode.UseVisualStyleBackColor = True
+        '
+        'LBTerminalCount
+        '
+        Me.LBTerminalCount.Name = "LBTerminalCount"
+        Me.LBTerminalCount.Size = New System.Drawing.Size(122, 22)
+        Me.LBTerminalCount.Text = "Count..."
         '
         'Form1
         '
@@ -276,5 +283,6 @@ Partial Class Form1
     Friend WithEvents TBTerminal As System.Windows.Forms.TextBox
     Friend WithEvents Timer1 As System.Windows.Forms.Timer
     Friend WithEvents APIMode As System.Windows.Forms.CheckBox
+    Friend WithEvents LBTerminalCount As System.Windows.Forms.ToolStripMenuItem
 
 End Class

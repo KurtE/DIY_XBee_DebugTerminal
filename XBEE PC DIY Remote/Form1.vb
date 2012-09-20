@@ -19,6 +19,7 @@ Public Class Form1
     Public XBSW As Stopwatch
     Public g_sUserInput As String
     Public g_fSendString As Boolean
+    Public MaxListCount As Integer
 
     Public PacketHdr(4) As Byte             ' A data packet header
 
@@ -265,6 +266,8 @@ Public Class Form1
         End If
 
         XBeeMy.Text = My.Settings.AtMY
+        MaxListCount = My.Settings.MaxListCount
+
 
         ' Lets try to reload the collection of destinations into the list
 
@@ -889,12 +892,6 @@ ReadLoop:
         SendXBeePacket(com1, XBEE_DEBUG_DETACH, 0, b)
     End Sub
 
-
-    Public Sub AddItemToLB(ByVal text As String)
-        LCDLB.Items.Add(text)
-        LCDLB.TopIndex = LCDLB.Items.Count - 1
-    End Sub
-
     '==============================================================================
     ' [DisplayRemoteString (pStr, cbOffset, cbStr)]
     ' 
@@ -907,12 +904,6 @@ ReadLoop:
         ' Make sure we are in the right mode to display the data
 
         If cbStr Then
-            'Dim s As String
-            'Dim i As Byte
-            's = Chr(pstr(cbOffset))
-            'For i = cbOffset + 1 To cbOffset + cbStr - 1
-            ' s = s + Chr(pstr(i))
-            'Next
             Dim s As String = Mid(System.Text.Encoding.ASCII.GetString(pstr), cbOffset + 1, cbStr)
 
             ' now see if the string came from our current DL or from another source for us to display...
@@ -1375,6 +1366,18 @@ ReadLoop:
 
     End Sub
 
+    Private Sub LBTerminalCount_Click(sender As Object, e As EventArgs) Handles LBTerminalCount.Click
+        Dim NewCountString As String
+        NewCountString = InputBox("Enter Terminal List Max Count: ", "XBee DIY Remote", MaxListCount.ToString)
+        Try
+            MaxListCount = Integer.Parse(NewCountString, Globalization.NumberStyles.Integer)
+            My.Settings.MaxListCount = MaxListCount     ' save away the maximum count
+
+        Catch ex As Exception
+
+        End Try
+    End Sub
+
     Private Sub Timer1_Tick(sender As System.Object, e As System.EventArgs) Handles Timer1.Tick
         Dim NewObj As Object
         If SCListBox.Count > 0 Then
@@ -1385,6 +1388,13 @@ ReadLoop:
                     SCListBox.RemoveAt(0)                   'Delete that item from our list
                 End SyncLock
                 LCDLB.Items.Add(NewObj)                     'get items from the start and add to our listbox
+                If LCDLB.Items.Count > MaxListCount Then
+                    LCDLB.Items.RemoveAt(0)                 ' Getting to large so lets remove the first item...
+                End If
+            End While
+            ' Duplicate loop to remove excess items... Will take care of cases where stuff was added elsewhere
+            While LCDLB.Items.Count > MaxListCount
+                LCDLB.Items.RemoveAt(0)                 ' Getting to large so lets remove the first item...
             End While
             LCDLB.TopIndex = LCDLB.Items.Count - 1  ' And Scroll to that location...
             LCDLB.EndUpdate()
