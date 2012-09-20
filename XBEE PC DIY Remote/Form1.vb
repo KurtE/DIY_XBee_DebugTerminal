@@ -1376,14 +1376,16 @@ ReadLoop:
     End Sub
 
     Private Sub Timer1_Tick(sender As System.Object, e As System.EventArgs) Handles Timer1.Tick
+        Dim NewObj As Object
         If SCListBox.Count > 0 Then
             LCDLB.BeginUpdate()
-            SyncLock SCListBox.SyncRoot
-                While SCListBox.Count > 0
-                    LCDLB.Items.Add(SCListBox(0))           'get items from the start and add to our listbox
+            While SCListBox.Count > 0
+                SyncLock SCListBox.SyncRoot                 ' Minimize the time we hold the semaphore to simply remove an item...
+                    NewObj = SCListBox(0)                   'get items from the start and add to our listbox
                     SCListBox.RemoveAt(0)                   'Delete that item from our list
-                End While
-            End SyncLock
+                End SyncLock
+                LCDLB.Items.Add(NewObj)                     'get items from the start and add to our listbox
+            End While
             LCDLB.TopIndex = LCDLB.Items.Count - 1  ' And Scroll to that location...
             LCDLB.EndUpdate()
         End If
